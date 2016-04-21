@@ -6,11 +6,24 @@ class Parser(object):
     """Parse output from Speedtest CLI into JSON"""
 
     def parse_all(self):
+        # needs:
+        # labels (timestamps)
+        # data (ping/dl/ul speed)
         records = []
+        labels = []
+        download_speeds = []
         for file in os.listdir("data"):
             if file.endswith(".speedtest.txt"):
                 records.append(self.parse("data/" + file))
-        return json.dumps(records)
+        for record in records:
+            labels.append(record["timestamp"])
+            if record["result"] == "success":
+                download_speeds.append(record["download"])
+        datasets = [{"label":"Download Speeds", "data":download_speeds}]
+        summary = {}
+        summary["labels"] = labels
+        summary["datasets"] = datasets
+        return json.dumps(summary)
 
     def parse(self, file):
         input = open(file, "r")
@@ -19,10 +32,9 @@ class Parser(object):
 
         timestamp = re.search(r'Speed Test Ran at:  (.*)', data)
         ping = re.search(r'Ping: (.*)', data)
-        download = re.search(r'Download: (.*)', data)
+        download = re.search(r'Download: (.*) Mbit/s', data)
         upload = re.search(r'Upload: (.*)', data)
         record = {}
-
         if timestamp:
             record["timestamp"] = timestamp.group(1)
             if ping:
