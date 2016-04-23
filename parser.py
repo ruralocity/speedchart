@@ -1,6 +1,5 @@
 import os
 import re
-import json
 
 class Parser(object):
     """Parse output from Speedtest CLI into JSON"""
@@ -23,7 +22,7 @@ class Parser(object):
         summary = {}
         summary["labels"] = labels
         summary["datasets"] = datasets
-        return json.dumps(summary)
+        return summary
 
     def parse(self, file):
         input = open(file, "r")
@@ -46,5 +45,6 @@ class Parser(object):
                 record["result"] = "failure"
         return record
 
-parser = Parser()
-print parser.parse_all()
+if __name__ == "__main__":
+    parser = Parser()
+    print parser.parse_all()

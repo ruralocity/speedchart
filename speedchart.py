@@ -1,9 +1,14 @@
-from flask import Flask
+from flask import Flask, render_template
+from parser import Parser
+import json
 app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return "Hello from speedchart"
+    parser = Parser()
+    data = parser.parse_all()
+    print json.dumps(data)
+    return render_template("index.html", data=data)
 
 if __name__ == "__main__":
     app.run(debug=True)
