@@ -18,7 +18,18 @@ class Parser(object):
             labels.append(record["timestamp"])
             if record["result"] == "success":
                 download_speeds.append(record["download"])
-        datasets = [{"label":"Download Speeds", "data":download_speeds}]
+        datasets = [
+            {
+                "label": "Download Speed",
+                "data": download_speeds,
+                "fillColor": "rgba(100,90,205,0.1)",
+                "strokeColor": "rgba(100,90,205,0.5)",
+                "pointColor": "rgba(100,90,205,0.5)",
+                "pointStrokeColor": "#fff",
+                "pointHighlightFill": "#fff",
+                "pointHighlightStroke": "rgba(220,220,220,1)"
+            }
+        ]
         summary = {}
         summary["labels"] = labels
         summary["datasets"] = datasets
