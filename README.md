@@ -2,6 +2,8 @@
 
 Chart your network speed, as reported by speedtest-cli.
 
+![Screenshot](screenshot.png)
+
 Inspired by [speedtest-cron](https://github.com/vwillcox/speedtest-cron). Written in Python to play as nicely as possible with Raspberry Pi, and also for me to get more practice with the language and its ecosystem (I normally write Ruby).
 
 ## Usage
