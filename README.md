@@ -20,5 +20,11 @@ Visit <http://localhost:5000> in your favorite browser to see a chart of your ne
 Probably more than this, but to start:
 
 - ~~Wrap in a simple (Flask?) web app to display the results in a chart, probably using Chart.js (hence the creative name, SpeedChart)~~
+- Finish Flask setup so the app can run outside of a development environment
 - Add test coverage
 - Refactor the parser (this is a hack so far)
+- Replace the dependency on speedtest-cron, so this can run standalone
+- Add filtering for starting/ending timestamps
+- Compute averages over displayed results
+- Visualize speeds the ISP advertises
+- Figure out best way to overlay ping speeds with download/upload speeds (my connection is slow, so dividing the ping speed by 100 works well in my case, but perhaps not so much on better connections)
