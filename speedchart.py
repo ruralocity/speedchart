@@ -7,7 +7,6 @@ app = Flask(__name__)
 def index():
     parser = Parser()
     data = parser.parse_all()
-    print json.dumps(data)
     return render_template("index.html", data=data)
 
 if __name__ == "__main__":
