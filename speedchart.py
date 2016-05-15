@@ -2,8 +2,28 @@ from flask import Flask, render_template
 import json
 import os
 import re
+from flask.ext.sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data.sqlite3"
+db = SQLAlchemy(app)
+
+class Result(db.Model):
+    """Parsed Speedtest results"""
+    __tablename__ = "results"
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, index=True, unique=True)
+    download = db.Column(db.Float)
+    upload = db.Column(db.Float)
+    ping = db.Column(db.Float)
+    result = db.Column(db.String)
+
+    def __init__(self, dictionary):
+        print dictionary
+        for key in dictionary:
+            setattr(self, key, dictionary[key])
+        print self
 
 class Parser(object):
     """Parse output from Speedtest CLI into JSON"""
@@ -82,6 +102,11 @@ class Parser(object):
                 record["upload"] = upload.group(1)
             else:
                 record["result"] = "failure"
+        # TODO: Revert parse_all to create standard dict, then convert data from
+        # database into chart.js format.
+        if Result.query.filter_by(timestamp=record["timestamp"]) is None:
+            db.session.add(Result(record))
+            db.session.commit()
         return record
 
 @app.route("/")
