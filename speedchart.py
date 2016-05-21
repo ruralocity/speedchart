@@ -66,7 +66,7 @@ class Charter(object):
         self.upload_speeds = []
         self.ping_speeds = []
         # temporarily get all records from the database
-        self.records = Result.query.all()
+        self.records = Result.query.order_by(Result.timestamp).all()
         for record in self.records:
             self.labels.append(record.timestamp)
             if record.result == "success":
