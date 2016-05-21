@@ -1,32 +1,10 @@
-from flask import Flask, render_template
-import json
 import os
 import re
-from flask.ext.sqlalchemy import SQLAlchemy
-from datetime import datetime
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data.sqlite3"
-db = SQLAlchemy(app)
-
-class Result(db.Model):
-    """Parsed Speedtest results"""
-    __tablename__ = "results"
-    id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, index=True, unique=True)
-    download = db.Column(db.Float)
-    upload = db.Column(db.Float)
-    ping = db.Column(db.Float)
-    result = db.Column(db.String)
-
-    def __init__(self, dictionary):
-        print dictionary
-        for key in dictionary:
-            setattr(self, key, dictionary[key])
-        print self
+from . import db
+from .models import Result
 
 class Parser(object):
-    """Parse output from Speedtest CLI into JSON"""
+    """Parse output from Speedtest CLI"""
 
     def parse_all(self):
         for file in os.listdir("data"):
@@ -58,7 +36,7 @@ class Parser(object):
         return record
 
 class Charter(object):
-    """Format data in Chart.js JSON format"""
+    """Structure data in Chart.js format"""
 
     def __init__(self):
         self.labels = []
@@ -111,15 +89,3 @@ class Charter(object):
         summary["labels"] = self.labels
         summary["datasets"] = datasets
         return summary
-
-@app.route("/")
-def index():
-    parser = Parser()
-    parser.parse_all() # for now
-    charter = Charter()
-    data = charter.output()
-    return render_template("index.html", data=data)
-
-if __name__ == "__main__":
-    db.create_all()
-    app.run(debug=True)

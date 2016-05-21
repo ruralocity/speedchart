@@ -13,7 +13,7 @@ This will be cleaned up as I understand the Python ecosystem and Flask deploymen
 - Gather some network speed data using speedtest-cron.
 - Copy or move your `*.speedtest.txt` files from speedtest-cron into the `data` directory.
 - `pip install flask`
-- `python speedtest.py`
+- `python run.py`
 
 Visit <http://localhost:5000> in your favorite browser to see a chart of your network speeds.
 
