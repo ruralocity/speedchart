@@ -29,59 +29,9 @@ class Parser(object):
     """Parse output from Speedtest CLI into JSON"""
 
     def parse_all(self):
-        # needs:
-        # labels (timestamps)
-        # data (ping/dl/ul speed)
-        records = []
-        labels = []
-        download_speeds = []
-        upload_speeds = []
-        ping_speeds = []
         for file in os.listdir("data"):
             if file.endswith(".speedtest.txt"):
-                records.append(self.parse("data/" + file))
-        for record in records:
-            labels.append(record["timestamp"])
-            if record["result"] == "success":
-                download_speeds.append(record["download"])
-                upload_speeds.append(record["upload"])
-                ping_speeds.append(record["ping"])
-        datasets = [
-            {
-                "label": "Download Speed",
-                "data": download_speeds,
-                "fillColor": "rgba(100,90,205,0.1)",
-                "strokeColor": "rgba(100,90,205,0.5)",
-                "pointColor": "rgba(100,90,205,0.5)",
-                "pointStrokeColor": "#fff",
-                "pointHighlightFill": "#fff",
-                "pointHighlightStroke": "rgba(220,220,220,1)"
-            },
-            {
-                "label": "Upload Speed",
-                "data": upload_speeds,
-                "fillColor": "rgba(151,187,205,0.2)",
-                "strokeColor": "rgba(151,187,205,1)",
-                "pointColor": "rgba(151,187,205,1)",
-                "pointStrokeColor": "#fff",
-                "pointHighlightFill": "#fff",
-                "pointHighlightStroke": "rgba(151,187,205,1)"
-            },
-            {
-                "label": "Ping Speed",
-                "data": ping_speeds,
-                "fillColor":"rgba(220,220,220,0.2)",
-                "strokeColor": "rgba(220,220,220,1)",
-                "pointColor": "rgba(220,220,220,1)",
-                "pointStrokeColor": "#fff",
-                "pointHighlightFill": "#fff",
-                "pointHighlightStroke": "rgba(151,187,205,1)"
-            }
-        ]
-        summary = {}
-        summary["labels"] = labels
-        summary["datasets"] = datasets
-        return summary
+                self.parse("data/" + file)
 
     def parse(self, file):
         input = open(file, "r")
@@ -102,17 +52,72 @@ class Parser(object):
                 record["upload"] = upload.group(1)
             else:
                 record["result"] = "failure"
-        # TODO: Revert parse_all to create standard dict, then convert data from
-        # database into chart.js format.
         if Result.query.filter_by(timestamp=record["timestamp"]) is None:
             db.session.add(Result(record))
             db.session.commit()
         return record
 
+class Charter(object):
+    """Format data in Chart.js JSON format"""
+
+    def __init__(self):
+        self.labels = []
+        self.download_speeds = []
+        self.upload_speeds = []
+        self.ping_speeds = []
+        # temporarily get all records from the database
+        self.records = Result.query.all()
+        for record in self.records:
+            self.labels.append(record.timestamp)
+            if record.result == "success":
+                self.download_speeds.append(record.download)
+                self.upload_speeds.append(record.upload)
+                self.ping_speeds.append(record.ping)
+
+    def output(self):
+        datasets = [
+            {
+                "label": "Download Speed",
+                "data": self.download_speeds,
+                "fillColor": "rgba(100,90,205,0.1)",
+                "strokeColor": "rgba(100,90,205,0.5)",
+                "pointColor": "rgba(100,90,205,0.5)",
+                "pointStrokeColor": "#fff",
+                "pointHighlightFill": "#fff",
+                "pointHighlightStroke": "rgba(220,220,220,1)"
+            },
+            {
+                "label": "Upload Speed",
+                "data": self.upload_speeds,
+                "fillColor": "rgba(151,187,205,0.2)",
+                "strokeColor": "rgba(151,187,205,1)",
+                "pointColor": "rgba(151,187,205,1)",
+                "pointStrokeColor": "#fff",
+                "pointHighlightFill": "#fff",
+                "pointHighlightStroke": "rgba(151,187,205,1)"
+            },
+            {
+                "label": "Ping Speed",
+                "data": self.ping_speeds,
+                "fillColor":"rgba(220,220,220,0.2)",
+                "strokeColor": "rgba(220,220,220,1)",
+                "pointColor": "rgba(220,220,220,1)",
+                "pointStrokeColor": "#fff",
+                "pointHighlightFill": "#fff",
+                "pointHighlightStroke": "rgba(151,187,205,1)"
+            }
+        ]
+        summary = {}
+        summary["labels"] = self.labels
+        summary["datasets"] = datasets
+        return summary
+
 @app.route("/")
 def index():
     parser = Parser()
-    data = parser.parse_all()
+    parser.parse_all() # for now
+    charter = Charter()
+    data = charter.output()
     return render_template("index.html", data=data)
 
 if __name__ == "__main__":
