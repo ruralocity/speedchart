@@ -2,6 +2,7 @@ import os
 import re
 from . import db
 from .models import Result
+import datetime
 
 class Parser(object):
     """Parse output from Speedtest CLI"""
@@ -22,7 +23,7 @@ class Parser(object):
         upload = re.search(r'Upload: (.*) Mbit/s', data)
         record = {}
         if timestamp:
-            record["timestamp"] = timestamp.group(1)
+            record["timestamp"] = datetime.datetime.strptime(timestamp.group(1), "%d/%m/%Y %H:%M")
             if ping:
                 record["result"] = "success"
                 record["ping"] = (float(ping.group(1)) / 100.0)
@@ -30,7 +31,7 @@ class Parser(object):
                 record["upload"] = upload.group(1)
             else:
                 record["result"] = "failure"
-        if Result.query.filter_by(timestamp=record["timestamp"]) is None:
+        if Result.query.filter_by(timestamp=record["timestamp"]).first() is None:
             db.session.add(Result(record))
             db.session.commit()
         return record
