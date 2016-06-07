@@ -11,7 +11,5 @@ class Result(db.Model):
     result = db.Column(db.String)
 
     def __init__(self, dictionary):
-        print dictionary
         for key in dictionary:
             setattr(self, key, dictionary[key])
-        print self
